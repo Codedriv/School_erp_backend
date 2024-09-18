@@ -4,12 +4,15 @@ const dotenv= require('dotenv')
 
 dotenv.config(); //start
 const app =express();
+const studentroute = require('./routes/student');
+app.use('/api/students',studentroute);
 app.use (express.json());
+
 
 mongoose.connect(process.env.MONGO_URI,
     {
         useNewUrlParser: true,
-        useunifiedtopology: true,
+        useUnifiedTopology: true,
     }
 )
 

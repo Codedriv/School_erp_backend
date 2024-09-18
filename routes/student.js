@@ -2,11 +2,11 @@ const express= require('express');
 const {check ,validationresult}= require('express-validator');
 const student=require('../models/student')
 const authenticity= require('../middleware/authenticate');
-const router =express.router(); //new router is created
+const router =express.Router(); //new router is created
 
 //creating a new student
 router.post(
-    '/',auth('Teacher'),//only teacher can accesss
+    '/',authenticity('Teacher'),//only teacher can accesss
     [
        check('name').not().isEmpty().withMessage('Name is mandatory'),
        check('rollno').not().isEmpty().withMessage('Rollno is mandatory'),
@@ -21,8 +21,8 @@ router.post(
 
         try{
 
-            const {name,rollno,class:student, section}= req.body;
-            let student =new student({name,rollno,class:student,section});
+            const {name,rollno,class:studentClass, section}= req.body;
+            let student =new student({name,rollno,class:studentClass,section});
             await student.save(); //save students info in db
             res.status(201).json(student);
 
@@ -40,9 +40,9 @@ router.put(
     authenticity('Teacher'),
     [
         check('name').optional().not().isEmpty().withMessage("name required"),
-        check('rollno').optional().not().withMessage('Rollno is mandatory'),
-        check('class').optional().not().withMessage("CLASS IS REQUIRED"),
-        check('section').optional().not().withMessage("section is reuired")
+        check('rollno').optional().not().isEmpty().withMessage('Rollno is mandatory'),
+        check('class').optional().not().isEmpty().withMessage("CLASS IS REQUIRED"),
+        check('section').optional().not().isEmpty().withMessage("section is reuired")
 
     ],
     async (req,res) =>{
