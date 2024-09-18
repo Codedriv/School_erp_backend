@@ -8,8 +8,8 @@ app.use (express.json());
 
 mongoose.connect(process.env.MONGO_URI,
     {
-        usenewurlparser: true,
-        usenunifiedtopology: true,
+        useNewUrlParser: true,
+        useunifiedtopology: true,
     }
 )
 
@@ -24,5 +24,5 @@ app.get('/',(req,res)=>{
 const port= process.env.port || 8080;
 app.listen(port,() =>{
     console.log('server running in port  ', port);
-    
+
 })
