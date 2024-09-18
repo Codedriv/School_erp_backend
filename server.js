@@ -6,6 +6,8 @@ dotenv.config(); //start
 const app =express();
 const studentroute = require('./routes/student');
 app.use('/api/students',studentroute);
+const assignmentroute = require('./routes/assignment');
+app.use('/api/assignments',assignmentroute);
 app.use (express.json());
 
 
