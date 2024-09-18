@@ -33,3 +33,63 @@ router.post(
         }
     }
 );
+
+//update student detail
+router.put(
+    '/:id',
+    authenticity('Teacher'),
+    [
+        check('name').optional().not().isEmpty().withMessage("name required"),
+        check('rollno').optional().not().withMessage('Rollno is mandatory'),
+        check('class').optional().not().withMessage("CLASS IS REQUIRED"),
+        check('section').optional().not().withMessage("section is reuired")
+
+    ],
+    async (req,res) =>{
+        const errors=validationresult(req); //for checking validation errors
+        if (!errors.isEmpty()){
+            return res.status(400).json({errors: errors.array()});
+        }
+
+        try{
+
+           
+           
+            const student= await student.findByIdAndUpdate(req.params.id,req.body,{new:true}); //save students info in db
+            if(!student){
+            res.status(404).json({message: "student not found"});
+
+        }
+        res.json(student)
+    }
+        catch(err)
+        {
+            res.status(500).json({message:'server errror'}); 
+        }
+    }
+
+);
+
+
+
+//for delet routes
+
+router.delete('/:id', authenticity('Teacher'), async(req,res) =>
+{
+    try{
+        const student =await student.findByIdAndUpdate(req.params.id);
+        if(!student){
+            return res.status(404).json({message: 'stduent not found'});
+
+        }
+
+        res.json({message: 'student deleted'});
+
+    }
+    catch(err){
+        res.status(500).json({message:"server errror"});
+    }
+});
+
+module.exports =router
+
