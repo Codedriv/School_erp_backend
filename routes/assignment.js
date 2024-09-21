@@ -1,35 +1,32 @@
-const express =require('express')
-const {check, validationResult} = require('express-validator');
-const Assignment =require('../middleware/authenticate');
+const express = require('express');
+const { check, validationResult } = require('express-validator');
+const Assignment = require('../models/assignment'); // Updated this line
 const authenticate = require('../middleware/authenticate');
-const router =express.Router();
+const router = express.Router();
 
-//creating assignment
-
+// Creating assignment
 router.post(
     '/',
     authenticate('Teacher'),
     [
-        check('title').not().isEmpty().withMessage('title is required'),
-        check('detail').not().isEmpty().withMessage('details required'),
-        check('duedate').not().isEmpty().withMessage('duedate mandatory'),
-        
+        check('title').not().isEmpty().withMessage('Title is required'),
+        check('details').not().isEmpty().withMessage('Details required'),
+        check('duedate').not().isEmpty().withMessage('Due date mandatory'),
     ],
-    async(req,res)=>{
-        const errors= validationResult(req);
-        if(!errors.isEmpty()){
-            return res.status(400).json({errors:errors.array});
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
         }
-        try{
-            const{title,detail,duedate}=req.body;
-            let assignment =new Assignment({title,detail,duedate});
+        try {
+            const { title, details, duedate } = req.body; // Fixed detail to details
+            let assignment = new Assignment({ title, details, duedate });
             await assignment.save();
             res.status(201).json(assignment);
-        }
-        catch(err){
+        } catch (err) {
             console.error(err.message);
-            res.status(500).json({message: 'server error'});
+            res.status(500).json({ message: 'Server error' });
         }
     }
 );
-module.exports =router
+module.exports = router;

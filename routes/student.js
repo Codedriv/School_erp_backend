@@ -1,95 +1,103 @@
-const express= require('express');
-const {check ,validationresult}= require('express-validator');
-const student=require('../models/student')
-const authenticity= require('../middleware/authenticate');
-const router =express.Router(); //new router is created
+const express = require('express');
+const { check, validationResult } = require('express-validator');
+const Student = require('../models/student');
+const authenticity = require('../middleware/authenticate');
+const router = express.Router();
 
-//creating a new student
+// Creating a new student
 router.post(
-    '/',authenticity('Teacher'),//only teacher can accesss
+    '/',
+    authenticity('Teacher'),
     [
-       check('name').not().isEmpty().withMessage('Name is mandatory'),
-       check('rollno').not().isEmpty().withMessage('Rollno is mandatory'),
-       check('class').not().isEmpty().withMessage("CLASS IS REQUIRED"),
-       check('section').not().isEmpty().withMessage("section is reuired")
+        check('name').not().isEmpty().withMessage('Name is mandatory'),
+        check('rollno').not().isEmpty().withMessage('Rollno is mandatory'),
+        check('class').not().isEmpty().withMessage("Class is required"),
+        check('section').not().isEmpty().withMessage("Section is required")
     ],
-    async (req,res) =>{
-        const errors=validationresult(req); //for checking validation errors
-        if (!errors.isEmpty()){
-            return res.status(400).json({errors: errors.array()});
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
         }
 
-        try{
-
-            const {name,rollno,class:studentClass, section}= req.body;
-            let student =new student({name,rollno,class:studentClass,section});
-            await student.save(); //save students info in db
+        try {
+            const { name, rollno, class: studentClass, section } = req.body;
+            let student = new Student({ name, rollno, class: studentClass, section });
+            await student.save(); // Corrected this line
             res.status(201).json(student);
-
-        }
-        catch(err)
-        {
-            res.status(500).json({message:'server errror'}); 
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).json({ message: 'Server error' });
         }
     }
 );
 
-//update student detail
+
+// Get all students
+router.get('/', authenticity('Teacher'), async (req, res) => {
+    try {
+        const students = await Student.find();
+        res.json(students);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Get a student by ID
+router.get('/:id', authenticity('Teacher'), async (req, res) => {
+    try {
+        const student = await Student.findById(req.params.id);
+        if (!student) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+        res.json(student);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+// Update student detail
 router.put(
     '/:id',
     authenticity('Teacher'),
     [
-        check('name').optional().not().isEmpty().withMessage("name required"),
+        check('name').optional().not().isEmpty().withMessage("Name required"),
         check('rollno').optional().not().isEmpty().withMessage('Rollno is mandatory'),
-        check('class').optional().not().isEmpty().withMessage("CLASS IS REQUIRED"),
-        check('section').optional().not().isEmpty().withMessage("section is reuired")
-
+        check('class').optional().not().isEmpty().withMessage("Class is required"),
+        check('section').optional().not().isEmpty().withMessage("Section is required")
     ],
-    async (req,res) =>{
-        const errors=validationresult(req); //for checking validation errors
-        if (!errors.isEmpty()){
-            return res.status(400).json({errors: errors.array()});
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
         }
 
-        try{
-
-           
-           
-            const student= await student.findByIdAndUpdate(req.params.id,req.body,{new:true}); //save students info in db
-            if(!student){
-            res.status(404).json({message: "student not found"});
-
-        }
-        res.json(student)
-    }
-        catch(err)
-        {
-            res.status(500).json({message:'server errror'}); 
+        try {
+            const student = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true });
+            if (!student) {
+                return res.status(404).json({ message: "Student not found" });
+            }
+            res.json(student);
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).json({ message: 'Server error' });
         }
     }
-
 );
 
-
-
-//for delet routes
-
-router.delete('/:id', authenticity('Teacher'), async(req,res) =>
-{
-    try{
-        const student =await student.findByIdAndUpdate(req.params.id);
-        if(!student){
-            return res.status(404).json({message: 'stduent not found'});
-
+// Delete routes
+router.delete('/:id', authenticity('Teacher'), async (req, res) => {
+    try {
+        const student = await Student.findByIdAndDelete(req.params.id);
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found' });
         }
-
-        res.json({message: 'student deleted'});
-
-    }
-    catch(err){
-        res.status(500).json({message:"server errror"});
+        res.json({ message: 'student deleted' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ message: "Server error" });
     }
 });
 
-module.exports =router
-
+module.exports = router;

@@ -1,33 +1,31 @@
-const express = require('express') //for creating server and defining routes
-const mongoose = require('mongoose') // to connect with MongoDB
-const dotenv= require('dotenv')
+const express = require('express');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 
-dotenv.config(); //start
-const app =express();
-const studentroute = require('./routes/student');
-app.use('/api/students',studentroute);
-const assignmentroute = require('./routes/assignment');
-app.use('/api/assignments',assignmentroute);
-app.use (express.json());
+dotenv.config();
 
+console.log('Mongo URI:', process.env.MONGO_URI);
+console.log('JWT Secret:', process.env.JWT_SECRET);
 
-mongoose.connect(process.env.MONGO_URI,
-    {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    }
-)
+const app = express();
+app.use(express.json());
 
-.then(()=> console.log('connected to mongodb'))
-.catch((err)=> console.error('mongo error is:',err));
+const studentRoute = require('./routes/student');
+app.use('/api/students', studentRoute);
+const assignmentRoute = require('./routes/assignment');
+app.use('/api/assignments', assignmentRoute);
+const authRoute = require('./routes/auth');
+app.use('/api', authRoute);
 
-app.get('/',(req,res)=>{
-    res.send('Server is running,Get request accpeted');
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch(err => console.error('Mongo error:', err));
 
+app.get('/', (req, res) => {
+    res.send('Server is running, GET request accepted');
 });
 
-const port= process.env.port || 8080;
-app.listen(port,() =>{
-    console.log('server running in port  ', port);
-
-})
+module.exports = app;
